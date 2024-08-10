@@ -10,10 +10,11 @@ export default function Clock() {
         return () => clearInterval(interval);
     }, []);
 
-    const clock = currentTime.toLocaleTimeString();
-    const options: object = { weekday: 'short', day: 'numeric', month: 'long'};
+    const optionTime: object = { hour: '2-digit', minute: '2-digit', second: '2-digit' };
+    const clock = currentTime.toLocaleTimeString('es-ES', optionTime); 
 
-    const dateStr = currentTime.toLocaleDateString('es-ES', options);
+    const optionsDate: object = { weekday: 'short', day: 'numeric', month: 'long'};
+    const dateStr = currentTime.toLocaleDateString('es-ES', optionsDate);
 
     return (
         <>
