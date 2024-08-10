@@ -17,13 +17,10 @@ export default function Clock() {
 
     return (
         <>
-            <div>
-                <span className="text-5xl font-bold">{clock}</span>
-            </div>
-            <div>
+            <div className="flex flex-col">
+                <span className="text-7xl font-bold">{clock}</span>
                 <span className="text-2xl font-bold">{dateStr}</span>
             </div>
         </>
-        
     );
 }
