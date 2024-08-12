@@ -51,7 +51,7 @@ const AttendanceTable: React.FC<AttendanceTableProps> = ({
   } , []);
   return (
     <TableContainer>
-      <Table>
+      <Table size="small">
         <TableHead>
           <TableRow>
             <TableCell>N°</TableCell>
