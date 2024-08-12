@@ -1,18 +1,27 @@
 import './App.css';
 import { useState } from 'react';
-import BasicTable from './components/BasicTable';
 import Clock from './components/Clock';
 import TextField from '@mui/material/TextField';
 import Button from '@mui/material/Button';
 import Alert from '@mui/material/Alert';
 import AttendanceTable from './components/AttendanceTable';
+import AttendanceStatusDialog from './components/AttendanceStatusDialog';
 
 function App() {
   const [documento, setDocumento] = useState<string>('');
+  const [inputDocument, setInputDocument] = useState<string>('');
   const [hasError, setHasError] = useState<boolean>(false);
   const [messageError, setMessageError] = useState<string>('');
   const [isDocumentChanged, setIsDocumentChanged] = useState<boolean>(false); // State to track document change
 
+  const [open, setOpen] = useState<boolean>(false);
+
+  const handleOpenDialog = () => {
+    setOpen(true);
+  };
+  const handleClose = () => {
+    setOpen(false);
+  };
   const handleMarcar = () => {
     if (documento.length !== 8) {
       setHasError(true);
@@ -20,6 +29,7 @@ function App() {
       return;
     }
     setHasError(false);
+    //handleClickOpen();
   };
 
   const handleConsultar = () => {
@@ -32,6 +42,25 @@ function App() {
     setIsDocumentChanged(prev => !prev); 
   };
 
+  const validateDocument = (document: string) => {
+    if (document.length !== 8 || isNaN(Number(document)) || document.includes('.')) {
+      setHasError(true);
+      setMessageError('El documento debe tener 8 caracteres');
+      return false;
+    }
+    return true;
+  };
+
+  const markAttendance = () => {
+    if (!validateDocument(inputDocument)) return;
+    handleOpenDialog();    
+  };
+
+  const consultAttendances = () => {
+    if (!validateDocument(inputDocument)) return;
+    
+  }
+
   return (
     <>
       <h1 className='text-3xl font-bold text-center mb-4'>Registrar Asistencia</h1>
@@ -40,7 +69,7 @@ function App() {
           <Clock />
           <TextField
             value={documento}
-            onChange={(e) => setDocumento(e.target.value)}
+            onChange={(e) => setInputDocument(e.target.value)}
             id='documentoID'
             label='Ingrese su documento'
             variant='outlined'
@@ -51,14 +80,14 @@ function App() {
             <Button
               variant='contained'
               color='success'
-              onClick={handleMarcar}
+              onClick={markAttendance}
             >
               Marcar
             </Button>
             <Button
               variant='outlined'
               color='primary'
-              onClick={handleConsultar}
+              onClick={consultAttendances}
             >
               Consultar
             </Button>
@@ -82,6 +111,7 @@ function App() {
           <AttendanceTable document={documento} isDocumentChanged={isDocumentChanged} />
         </div>
       </section>
+      <AttendanceStatusDialog open={open} status='Entrada' onClose={handleClose} />
     </>
   );
 }

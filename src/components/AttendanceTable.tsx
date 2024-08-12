@@ -10,6 +10,7 @@ import {
   TableRow,
 } from "@mui/material";
 import Chip from "@mui/material/Chip";
+import CircularProgress from "@mui/material/CircularProgress";
 
 interface AttendanceTableProps {
   document: string;
@@ -21,15 +22,25 @@ const AttendanceTable: React.FC<AttendanceTableProps> = ({
   isDocumentChanged,
 }) => {
   const [attendances, setAttendances] = useState<Asistencia[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+
   useEffect(() => {
     const fetchAttendances = async () => {
       if (isDocumentChanged && document.length === 8) {
+        setLoading(true);
         let url = `http://127.0.0.1:8000/api/compuusasoft/asistencia/${document}/historial`;
         const response = await axios.get(url);
         if (response.data.error) {
           setAttendances([]);
         } else {
           setAttendances(response.data.data);
+          console.log(response.data.data);
+          if (response.data.data.length === 0) {
+            setError('No se encontraron registros');
+          }
+          setLoading(false);
         }
       }
     };
@@ -45,6 +56,10 @@ const AttendanceTable: React.FC<AttendanceTableProps> = ({
           setAttendances([]);
         } else {
           setAttendances(response.data.data);
+          if (response.data.data.length === 0) {
+            setError('No se encontraron registros');
+          }
+          setLoading(false);
         }
     }
     fetchAttendances();
@@ -62,7 +77,21 @@ const AttendanceTable: React.FC<AttendanceTableProps> = ({
           </TableRow>
         </TableHead>
         <TableBody>
-          {attendances.length > 0 ? (
+
+          {loading && (
+            <TableRow>
+              <TableCell colSpan={5} align="center">
+                <CircularProgress />
+              </TableCell>
+            </TableRow>
+          )}
+          {error ? (
+            <TableRow>
+              <TableCell colSpan={5} align="center">
+                {error}
+              </TableCell>
+            </TableRow>
+          ) : (
             attendances.map((attendance, index) => (
               <TableRow key={attendance.asistencia_id}>
                 <TableCell>{index + 1}</TableCell>
@@ -82,12 +111,6 @@ const AttendanceTable: React.FC<AttendanceTableProps> = ({
                 <TableCell>{attendance.almacen}</TableCell>
               </TableRow>
             ))
-          ) : (
-            <TableRow>
-              <TableCell colSpan={5} align="center">
-                No hay datos disponibles
-              </TableCell>
-            </TableRow>
           )}
         </TableBody>
       </Table>
