@@ -1,12 +1,18 @@
 export type AttendanceAction = 'Ingreso' | 'Inicio receso' | 'Fin receso' | 'Salida';
 export type AttendanceState = AttendanceAction | null;
 
+export interface AttendanceHistoryEntry {
+  action: AttendanceAction;
+  timestamp: string;
+}
+
 export interface AttendanceLookupResult {
   success: boolean;
   dni: string;
   employeeName?: string;
   currentState: AttendanceState;
   nextActions: AttendanceAction[];
+  historyLog: AttendanceHistoryEntry[];
   message: string;
 }
 
@@ -27,19 +33,33 @@ const EMPLOYEE_DIRECTORY: Record<string, string> = {
   '44332211': 'Lucía Fernández',
 };
 
-const attendanceHistoryByDni: Record<string, AttendanceAction[]> = {
+interface InternalHistoryEntry {
+  action: AttendanceAction;
+  timestamp: string;
+}
+
+const attendanceHistoryByDni: Record<string, InternalHistoryEntry[]> = {
   '12345678': [],
-  '87654321': ['Ingreso'],
-  '11223344': ['Ingreso', 'Inicio receso'],
-  '44332211': ['Ingreso', 'Inicio receso', 'Fin receso'],
+  '87654321': [
+    { action: 'Ingreso', timestamp: '08:15:00' },
+  ],
+  '11223344': [
+    { action: 'Ingreso', timestamp: '07:50:00' },
+    { action: 'Inicio receso', timestamp: '12:30:00' },
+  ],
+  '44332211': [
+    { action: 'Ingreso', timestamp: '08:00:00' },
+    { action: 'Inicio receso', timestamp: '12:00:00' },
+    { action: 'Fin receso', timestamp: '13:00:00' },
+  ],
 };
 
 function delay(ms: number): Promise<void> {
   return new Promise((resolve) => setTimeout(resolve, ms));
 }
 
-function getCurrentState(history: AttendanceAction[]): AttendanceState {
-  return history[history.length - 1] ?? null;
+function getCurrentState(history: InternalHistoryEntry[]): AttendanceState {
+  return history[history.length - 1]?.action ?? null;
 }
 
 export function getNextActions(currentState: AttendanceState): AttendanceAction[] {
@@ -95,11 +115,13 @@ export async function lookupEmployeeAttendance(dni: string): Promise<AttendanceL
       dni,
       currentState: null,
       nextActions: [],
+      historyLog: [],
       message: `No encontramos un trabajador asociado al DNI ${dni}.`,
     };
   }
 
-  const currentState = getCurrentState(attendanceHistoryByDni[dni] ?? []);
+  const history = attendanceHistoryByDni[dni] ?? [];
+  const currentState = getCurrentState(history);
 
   return {
     success: true,
@@ -107,6 +129,7 @@ export async function lookupEmployeeAttendance(dni: string): Promise<AttendanceL
     employeeName,
     currentState,
     nextActions: getNextActions(currentState),
+    historyLog: history.map((h) => ({ action: h.action, timestamp: h.timestamp })),
     message: getCurrentStateMessage(currentState),
   };
 }
@@ -178,7 +201,7 @@ export async function registerAttendance(
     };
   }
 
-  attendanceHistoryByDni[dni] = [...history, action];
+  attendanceHistoryByDni[dni] = [...history, { action, timestamp: getFormattedTimestamp() }];
 
   return {
     success: true,

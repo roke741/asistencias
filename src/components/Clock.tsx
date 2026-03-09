@@ -1,27 +1,37 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect } from 'react';
 
 export default function Clock() {
-    const [currentTime, setCurrentTime] = useState(new Date());
+  const [now, setNow] = useState(new Date());
 
-    useEffect(() => {
-        const interval = setInterval(() => {
-            setCurrentTime(new Date());
-        }, 1000);
-        return () => clearInterval(interval);
-    }, []);
+  useEffect(() => {
+    const id = setInterval(() => setNow(new Date()), 1000);
+    return () => clearInterval(id);
+  }, []);
 
-    const optionTime: object = { hour: '2-digit', minute: '2-digit', second: '2-digit' };
-    const clock = currentTime.toLocaleTimeString('es-ES', optionTime); 
+  const time = now.toLocaleTimeString('es-ES', {
+    hour: '2-digit',
+    minute: '2-digit',
+  });
+  const seconds = now.getSeconds().toString().padStart(2, '0');
+  const date = now.toLocaleDateString('es-ES', {
+    weekday: 'long',
+    day: 'numeric',
+    month: 'long',
+  });
 
-    const optionsDate: object = { weekday: 'short', day: 'numeric', month: 'long'};
-    const dateStr = currentTime.toLocaleDateString('es-ES', optionsDate);
-
-    return (
-        <>
-            <div className="flex flex-col">
-                <span className="text-7xl font-bold">{clock}</span>
-                <span className="text-2xl font-bold">{dateStr}</span>
-            </div>
-        </>
-    );
+  return (
+    <div className="flex flex-col items-center select-none">
+      <div className="flex items-baseline">
+        <span className="text-6xl font-bold tabular-nums tracking-tight text-slate-800 dark:text-white sm:text-7xl">
+          {time}
+        </span>
+        <span className="ml-1 text-2xl font-semibold tabular-nums text-primary/60 sm:text-3xl">
+          :{seconds}
+        </span>
+      </div>
+      <span className="mt-1 text-sm font-medium capitalize text-slate-500 dark:text-slate-400 sm:text-base">
+        {date}
+      </span>
+    </div>
+  );
 }
