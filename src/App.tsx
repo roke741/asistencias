@@ -208,6 +208,7 @@ function App() {
   useEffect(() => {
     if (markState.status === 'success' && markState.result) {
       startTransition(() => {
+        setActiveLookup(null);
         setNotice({
           color: 'success',
           title: 'Marcación registrada',
