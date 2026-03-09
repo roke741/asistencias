@@ -10,12 +10,9 @@
     "preview": "vite preview"
   },
   "dependencies": {
-    "@emotion/react": "^11.13.0",
-    "@emotion/styled": "^11.13.0",
-    "@mui/material": "^7.3.9",
-    "@mui/x-data-grid": "^8.27.4",
-    "axios": "^1.7.3",
+    "@heroui/react": "^2.8.10",
     "dayjs": "^1.11.12",
+    "framer-motion": "^12.35.2",
     "react": "^19.2.4",
     "react-dom": "^19.2.4"
   },

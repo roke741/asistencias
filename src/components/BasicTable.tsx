@@ -1,10 +1,11 @@
-import Table from '@mui/material/Table';
-import TableBody from '@mui/material/TableBody';
-import TableCell from '@mui/material/TableCell';
-import TableContainer from '@mui/material/TableContainer';
-import TableHead from '@mui/material/TableHead';
-import TableRow from '@mui/material/TableRow';
-import Paper from '@mui/material/Paper';
+import {
+  Table,
+  TableHeader,
+  TableColumn,
+  TableBody,
+  TableRow,
+  TableCell,
+} from '@heroui/react';
 
 function createData(
   name: string,
@@ -26,29 +27,26 @@ const rows = [
 
 export default function BasicTable() {
   return (
-    <TableContainer component={Paper}>
-      <Table sx={{ minWidth: 650 }} aria-label="simple table">
-        <TableHead>
-          <TableRow>
-            <TableCell>N°</TableCell>
-            <TableCell>Nombre</TableCell>
-            <TableCell>Marcacion</TableCell>
-            <TableCell>Time</TableCell>
-            <TableCell>Doc</TableCell>
+    <Table aria-label="simple table">
+      <TableHeader>
+        <TableColumn>N°</TableColumn>
+        <TableColumn>Nombre</TableColumn>
+        <TableColumn>Marcacion</TableColumn>
+        <TableColumn>Time</TableColumn>
+        <TableColumn>Doc</TableColumn>
+      </TableHeader>
+      <TableBody>
+        {rows.map((row) => (
+          <TableRow key={row.name}>
+            <TableCell>{row.name}</TableCell>
+            <TableCell>{row.calories}</TableCell>
+            <TableCell>{row.fat}</TableCell>
+            <TableCell>{row.carbs}</TableCell>
+            <TableCell>{row.protein}</TableCell>
           </TableRow>
-        </TableHead>
-        <TableBody>
-          {rows.map((row) => (
-            <TableRow key={row.name}>
-              <TableCell>{row.name}</TableCell>
-              <TableCell>{row.calories}</TableCell>
-              <TableCell>{row.fat}</TableCell>
-              <TableCell>{row.carbs}</TableCell>
-              <TableCell>{row.protein}</TableCell>
-            </TableRow>
-          ))}
-        </TableBody>
-      </Table>
-    </TableContainer>
+        ))}
+      </TableBody>
+    </Table>
   );
 }
+
