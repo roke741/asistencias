@@ -1,1 +1,0 @@
-{"root":["./src/App.tsx","./src/main.tsx","./src/vite-env.d.ts","./src/components/AttendanceStatusDialog.tsx","./src/components/AttendanceTable.tsx","./src/components/BasicTable.tsx","./src/components/Clock.tsx","./src/types/model.types.ts"],"errors":true,"version":"5.9.3"}
