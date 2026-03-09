@@ -30,7 +30,7 @@ const AttendanceTable: React.FC<AttendanceTableProps> = ({
     const fetchAttendances = async () => {
       if (isDocumentChanged && document.length === 8) {
         setLoading(true);
-        let url = `http://127.0.0.1:8000/api/compuusasoft/asistencia/${document}/historial`;
+        const url = `http://127.0.0.1:8000/api/compuusasoft/asistencia/${document}/historial`;
         const response = await axios.get(url);
         if (response.data.error) {
           setAttendances([]);
@@ -50,7 +50,7 @@ const AttendanceTable: React.FC<AttendanceTableProps> = ({
 
   useEffect(() => {
     const fetchAttendances = async () => {
-      let url = 'http://127.0.0.1:8000/api/compuusasoft/asistencia/historial';
+      const url = 'http://127.0.0.1:8000/api/compuusasoft/asistencia/historial';
         const response = await axios.get(url);
         if (response.data.error) {
           setAttendances([]);

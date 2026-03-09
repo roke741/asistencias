@@ -8,11 +8,10 @@ import AttendanceTable from './components/AttendanceTable';
 import AttendanceStatusDialog from './components/AttendanceStatusDialog';
 
 function App() {
-  const [documento, setDocumento] = useState<string>('');
   const [inputDocument, setInputDocument] = useState<string>('');
   const [hasError, setHasError] = useState<boolean>(false);
   const [messageError, setMessageError] = useState<string>('');
-  const [isDocumentChanged, setIsDocumentChanged] = useState<boolean>(false); // State to track document change
+  const [isDocumentChanged, setIsDocumentChanged] = useState<boolean>(false);
 
   const [open, setOpen] = useState<boolean>(false);
 
@@ -22,26 +21,6 @@ function App() {
   const handleClose = () => {
     setOpen(false);
   };
-  const handleMarcar = () => {
-    if (documento.length !== 8) {
-      setHasError(true);
-      setMessageError('El documento debe tener 8 caracteres');
-      return;
-    }
-    setHasError(false);
-    //handleClickOpen();
-  };
-
-  const handleConsultar = () => {
-    if (documento.length !== 8) {
-      setHasError(true);
-      setMessageError('El documento debe tener 8 caracteres');
-      return;
-    }
-    setHasError(false);
-    setIsDocumentChanged(prev => !prev); 
-  };
-
   const validateDocument = (document: string) => {
     if (document.length !== 8 || isNaN(Number(document)) || document.includes('.')) {
       setHasError(true);
@@ -53,13 +32,15 @@ function App() {
 
   const markAttendance = () => {
     if (!validateDocument(inputDocument)) return;
+    setHasError(false);
     handleOpenDialog();    
   };
 
   const consultAttendances = () => {
     if (!validateDocument(inputDocument)) return;
-    
-  }
+    setHasError(false);
+    setIsDocumentChanged((prev) => !prev);
+  };
 
   return (
     <>
@@ -68,7 +49,7 @@ function App() {
         <div className='flex flex-col items-center justify-center gap-4 mb-6'>
           <Clock />
           <TextField
-            value={documento}
+            value={inputDocument}
             onChange={(e) => setInputDocument(e.target.value)}
             id='documentoID'
             label='Ingrese su documento'
@@ -108,7 +89,7 @@ function App() {
           </div>
         )}
         <div className='my-2'>
-          <AttendanceTable document={documento} isDocumentChanged={isDocumentChanged} />
+          <AttendanceTable document={inputDocument} isDocumentChanged={isDocumentChanged} />
         </div>
       </section>
       <AttendanceStatusDialog open={open} status='Entrada' onClose={handleClose} />
