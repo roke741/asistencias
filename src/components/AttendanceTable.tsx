@@ -1,21 +1,36 @@
-import React, { useState, useEffect } from "react";
-import axios from "axios";
-import { Asistencia } from "../types/model.types";
+import React, { useState, useEffect } from 'react';
 import {
   Table,
-  TableCell,
-  TableContainer,
-  TableHead,
+  TableHeader,
+  TableColumn,
   TableBody,
   TableRow,
-} from "@mui/material";
-import Chip from "@mui/material/Chip";
-import CircularProgress from "@mui/material/CircularProgress";
+  TableCell,
+  Chip,
+  Spinner,
+  getKeyValue,
+} from '@heroui/react';
+import { Asistencia } from '../types/model.types';
+import {
+  getAttendanceHistory,
+  getAttendanceByDocument,
+} from '../services/attendanceService';
+import { STATUS_COLOR_MAP } from '../constants/attendanceStatus';
 
 interface AttendanceTableProps {
   document: string;
   isDocumentChanged: boolean;
 }
+
+const COLUMNS = [
+  { key: 'index', label: 'N°' },
+  { key: 'nombre', label: 'Nombre' },
+  { key: 'marcacion', label: 'Marcación' },
+  { key: 'marcacion_tipo', label: 'Estado' },
+  { key: 'almacen', label: 'Almacén' },
+];
+
+type TableRow = Asistencia & { index: number };
 
 const AttendanceTable: React.FC<AttendanceTableProps> = ({
   document,
@@ -25,97 +40,95 @@ const AttendanceTable: React.FC<AttendanceTableProps> = ({
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
+  useEffect(() => {
+    const fetchAll = async () => {
+      setLoading(true);
+      setError(null);
+      try {
+        const data = await getAttendanceHistory();
+        setAttendances(data);
+        if (data.length === 0) setError('No se encontraron registros');
+      } catch {
+        setError('Error al cargar los registros');
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchAll();
+  }, []);
 
   useEffect(() => {
-    const fetchAttendances = async () => {
-      if (isDocumentChanged && document.length === 8) {
-        setLoading(true);
-        const url = `http://127.0.0.1:8000/api/compuusasoft/asistencia/${document}/historial`;
-        const response = await axios.get(url);
-        if (response.data.error) {
-          setAttendances([]);
-        } else {
-          setAttendances(response.data.data);
-          console.log(response.data.data);
-          if (response.data.data.length === 0) {
-            setError('No se encontraron registros');
-          }
-          setLoading(false);
-        }
+    if (!isDocumentChanged || document.length !== 8) return;
+
+    const fetchByDocument = async () => {
+      setLoading(true);
+      setError(null);
+      try {
+        const data = await getAttendanceByDocument(document);
+        setAttendances(data);
+        if (data.length === 0) setError('No se encontraron registros para este documento');
+      } catch {
+        setError('Error al cargar los registros');
+      } finally {
+        setLoading(false);
       }
     };
 
-    fetchAttendances();
-  }, [document, isDocumentChanged]); // Dependencias del useEffect
+    fetchByDocument();
+  }, [document, isDocumentChanged]);
 
-  useEffect(() => {
-    const fetchAttendances = async () => {
-      const url = 'http://127.0.0.1:8000/api/compuusasoft/asistencia/historial';
-        const response = await axios.get(url);
-        if (response.data.error) {
-          setAttendances([]);
-        } else {
-          setAttendances(response.data.data);
-          if (response.data.data.length === 0) {
-            setError('No se encontraron registros');
-          }
-          setLoading(false);
-        }
+  const rows: TableRow[] = attendances.map((a, i) => ({ ...a, index: i + 1 }));
+
+  const renderCell = (item: TableRow, columnKey: string) => {
+    if (columnKey === 'marcacion_tipo') {
+      const color = STATUS_COLOR_MAP[item.marcacion_tipo_id] ?? 'default';
+      return (
+        <Chip color={color} variant="flat" size="sm" aria-label={item.marcacion_tipo}>
+          {item.marcacion_tipo}
+        </Chip>
+      );
     }
-    fetchAttendances();
-  } , []);
-  return (
-    <TableContainer>
-      <Table size="small">
-        <TableHead>
-          <TableRow>
-            <TableCell>N°</TableCell>
-            <TableCell>Nombre</TableCell>
-            <TableCell>Marcacion</TableCell>
-            <TableCell>Estado</TableCell>
-            <TableCell>Almacen</TableCell>
-          </TableRow>
-        </TableHead>
-        <TableBody>
+    return getKeyValue(item, columnKey);
+  };
 
-          {loading && (
-            <TableRow>
-              <TableCell colSpan={5} align="center">
-                <CircularProgress />
-              </TableCell>
-            </TableRow>
-          )}
-          {error ? (
-            <TableRow>
-              <TableCell colSpan={5} align="center">
-                {error}
-              </TableCell>
-            </TableRow>
-          ) : (
-            attendances.map((attendance, index) => (
-              <TableRow key={attendance.asistencia_id}>
-                <TableCell>{index + 1}</TableCell>
-                <TableCell>{attendance.nombre}</TableCell>
-                <TableCell>{attendance.marcacion}</TableCell>
-                <TableCell align="center">
-                  {attendance.marcacion_tipo_id === 1 ? (
-                    <Chip label={attendance.marcacion_tipo} color="success" />
-                  ) : attendance.marcacion_tipo_id === 2 ? (
-                    <Chip label={attendance.marcacion_tipo} color="primary" />
-                  ) : attendance.marcacion_tipo_id === 3 ? (
-                    <Chip label={attendance.marcacion_tipo} color="warning" />
-                  ) : attendance.marcacion_tipo_id === 4 ? (
-                    <Chip label={attendance.marcacion_tipo} color="error" />
-                  ) : null}
-                </TableCell>
-                <TableCell>{attendance.almacen}</TableCell>
-              </TableRow>
-            ))
-          )}
-        </TableBody>
-      </Table>
-    </TableContainer>
+  return (
+    <Table
+      aria-label="Historial de asistencias"
+      isStriped
+      removeWrapper={false}
+      classNames={{
+        wrapper: 'shadow-sm rounded-xl',
+        th: 'bg-default-100 text-default-700 font-semibold',
+      }}
+    >
+      <TableHeader columns={COLUMNS}>
+        {(col) => <TableColumn key={col.key}>{col.label}</TableColumn>}
+      </TableHeader>
+      <TableBody
+        items={rows}
+        isLoading={loading}
+        loadingContent={
+          <div className="flex justify-center py-8">
+            <Spinner label="Cargando registros..." color="primary" />
+          </div>
+        }
+        emptyContent={
+          <div className="text-center py-6 text-default-400" role="status">
+            {error ?? 'No hay registros para mostrar'}
+          </div>
+        }
+      >
+        {(item) => (
+          <TableRow key={item.asistencia_id}>
+            {(columnKey) => (
+              <TableCell>{renderCell(item, columnKey as string)}</TableCell>
+            )}
+          </TableRow>
+        )}
+      </TableBody>
+    </Table>
   );
 };
 
 export default AttendanceTable;
+
